@@ -1,14 +1,33 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+#![feature(async_iterator)]
+#![feature(result_flattening)]
+
+pub use listener::UtpListener;
+pub use stream::UtpStream;
+pub use socket::UtpSocket;
+
+mod bit_iterator;
+mod error;
+mod listener;
+mod packet;
+mod socket;
+mod stream;
+mod time;
+mod util;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    fn next_test_port() -> u16 {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        static NEXT_OFFSET: AtomicUsize = AtomicUsize::new(0);
+        const BASE_PORT: u16 = 10_000;
+        BASE_PORT + NEXT_OFFSET.fetch_add(1, Ordering::Relaxed) as u16
+    }
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    pub fn next_test_ip4<'a>() -> (&'a str, u16) {
+        ("127.0.0.1", next_test_port())
+    }
+
+    pub fn next_test_ip6<'a>() -> (&'a str, u16) {
+        ("::1", next_test_port())
     }
 }
